@@ -35,8 +35,8 @@ class MyWindow(QMainWindow):
         
         for fish in self.fishes:
             x, y = fish.get_position()
-            painter.setBrush(QColor(255, 100, 100))
-            painter.drawEllipse(QPoint(int(x), int(y)), 10, 5)
+            fish_image = fish.get_image()
+            painter.drawPixmap(int(x), int(y), fish_image)
     
     def create_fishes(self, count):
         for _ in range(count):
@@ -50,7 +50,7 @@ class MyWindow(QMainWindow):
     def start_animation(self):
         self.fish_timer = QTimer(self)
         self.fish_timer.timeout.connect(self.update_fishes)
-        self.fish_timer.start(50)  # Update fish every 50ms
+        self.fish_timer.start(60)  # Update fish every 50ms
 
     def update_fishes(self):
         for fish in self.fishes:

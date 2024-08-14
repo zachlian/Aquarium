@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QPainter, QPixmap, QFont, QRegion
 from constants import *
 from hardware import HardwareMonitor
+import math
 
 class Fishtank(QWidget):
     def __init__(self, parent=None):
@@ -54,9 +55,15 @@ class Fishtank(QWidget):
     def mouseMoveEvent(self, event):
         if hasattr(self, 'oldPos'):
             delta = QPoint(event.globalPos() - self.oldPos)
-            new_x = self.x() + delta.x()
+            if delta.x() > 0:
+                dx = min(delta.x(), MAX_TANK_DELTA)
+            else:
+                dx = max(delta.x(), -MAX_TANK_DELTA)
+            new_x = self.x() + dx
+            #new_y = self.y() + delta.y()
             new_rect = self.geometry()
             new_rect.moveLeft(new_x)
+            #new_rect.moveTop(new_y)
             
             if new_rect.left() < 0:
                 new_rect.moveLeft(0)
@@ -68,16 +75,11 @@ class Fishtank(QWidget):
             self.update()
             
             for fish in self.parent().fishes:
-                if delta.x() > 0: # Move right
+                if dx > 0: # Tank moves to the right
                     fish.is_stuck_on_edge(self, True)
                 else:
                     fish.is_stuck_on_edge(self, False)
-            
-            # dt = 0.05
-            # vx = delta.x() / dt
-            # vy = delta.y() / dt
-            # for fish in self.parent().fishes:
-            #     fish.apply_force(vx, vy)
+                fish.force = dx * FORCE_FACTOR
 
     def mouseReleaseEvent(self, event):
         if hasattr(self, 'oldPos'):
@@ -95,7 +97,23 @@ class Fishtank(QWidget):
         self.update()
         
     def is_inside_tank(self, x, y):
-        if ALLOW_FISH_EXIT and y < self.y():  # 如果在魚缸上方，則允許
+        if ALLOW_FISH_EXIT and y < self.y():
             return True
         shape = QRegion(self.mask)
-        return shape.contains(QPoint(int(x - self.x()), int(y - self.y())))
+        FISH_SHAPE = max(FISH_WIDTH, FISH_HEIGHT)
+        left_top = QPoint(int(x - self.x()), int(y - self.y()))
+        right_top = QPoint(int(x + FISH_SHAPE - self.x()), int(y - self.y()))
+        left_bottom = QPoint(int(x - self.x()), int(y + FISH_SHAPE - self.y()))
+        right_bottom = QPoint(int(x + FISH_SHAPE - self.x()), int(y + FISH_SHAPE - self.y()))
+        return shape.contains(left_top) and shape.contains(right_top) and shape.contains(left_bottom) and shape.contains(right_bottom)
+
+    def find_nearest_valid_position(self, x, y, is_right):
+        tank_pos = self.pos()
+        for i in range(0, self.width()):
+            if is_right:
+                x = x + 1
+            else:
+                x = x - 1 - FISH_WIDTH
+            if QRegion(self.mask).contains(QPoint(int(x - tank_pos.x()), int(y - tank_pos.y()))):
+                return x
+        return x
