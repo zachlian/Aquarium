@@ -32,7 +32,7 @@ class Fishtank(QWidget):
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
         painter.setRenderHint(QPainter.Antialiasing, True)
         painter.fillRect(self.rect(), BACKGROUND_COLOR)
-        self.draw_hardware_info()
+        #self.draw_hardware_info()
 
     def draw_hardware_info(self):
         painter = QPainter(self)
@@ -96,9 +96,7 @@ class Fishtank(QWidget):
         self.gpu_usage = self.hardware_monitor.get_gpu_usage()
         self.update()
         
-    def is_inside_tank(self, x, y):
-        if ALLOW_FISH_EXIT and y < self.y():
-            return True
+    def is_inside_tank(self, x, y):        
         shape = QRegion(self.mask)
         FISH_SHAPE = max(FISH_WIDTH, FISH_HEIGHT)
         left_top = QPoint(int(x - self.x()), int(y - self.y()))

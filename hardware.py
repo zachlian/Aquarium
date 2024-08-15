@@ -20,11 +20,3 @@ class HardwareMonitor:
             return None
         except:
             return None
-
-# monitor = HardwareMonitor()
-# cpu = monitor.get_cpu_usage()
-# memory = monitor.get_memory_usage()
-# gpu = monitor.get_gpu_usage()
-# print(f'CPU: {cpu}%')
-# print(f'Memory: {memory}%')
-# print(f'GPU: {gpu}%')
